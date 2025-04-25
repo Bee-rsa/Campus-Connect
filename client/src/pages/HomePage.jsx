@@ -50,10 +50,10 @@ export default HomePage;
 
 const NoMoreProfiles = () => (
   <div className="flex flex-col items-center justify-center h-full text-center p-4 sm:p-8">
-    <Frown className="text-pink-400 mb-4 sm:mb-6" size={60} />
+    <Frown className="text-blue-400 mb-4 sm:mb-6" size={60} />
     <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-4">Woah there, speedy fingers!</h2>
     <p className="text-lg sm:text-xl text-gray-600 mb-4 sm:mb-6">
-      Bro are you OK? Maybe it's time to touch some grass.
+      Bro are you OK? Maybe it&apos;s time to touch some grass.
     </p>
   </div>
 );

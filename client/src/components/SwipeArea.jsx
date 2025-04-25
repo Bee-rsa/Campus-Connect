@@ -13,7 +13,7 @@ const SwipeArea = () => {
   };
 
   return (
-    <div className="relative w-full max-w-[28rem] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl h-[70vh] mx-auto font-poppins px-2">
+    <div className="relative w-full max-w-[28rem] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl h-[70vh] mx-auto font-poppins"> {/* Changed to px-4 for equal padding */}
       {userProfiles.map((user, index) => (
         <TinderCard
           ref={(el) => (cardRefs.current[index] = el)}
