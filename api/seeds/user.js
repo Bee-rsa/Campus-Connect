@@ -47,7 +47,7 @@ const bioDescriptors = [
 	"Aspiring chef",
 ];
 
-const generateBio = () => {
+const generatebio = () => {
 	const descriptors = bioDescriptors.sort(() => 0.5 - Math.random()).slice(0, 3);
 	return descriptors.join(" | ");
 };
@@ -63,7 +63,7 @@ const generateRandomUser = (gender, index) => {
 		age,
 		gender,
 		genderPreference: genderPreferences[Math.floor(Math.random() * genderPreferences.length)],
-		bio: generateBio(),
+		bio: generatebio(),
 		image: `/${gender}/${index + 1}.jpg`,
 	};
 };

@@ -11,7 +11,7 @@ const signToken = (id) => {
 export const signup = async (req, res) => {
 	const { name, email, password, age, gender, genderPreference, university, course} = req.body;
 	try {
-		if (!name || !email || !password || !age || !gender || !genderPreference || !university || !course) {
+		if (!name || !email || !password || !age ||  !gender || !genderPreference || !university || !course) {
 			return res.status(400).json({
 				success: false,
 				message: "All fields are required",

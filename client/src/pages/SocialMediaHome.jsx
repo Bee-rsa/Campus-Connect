@@ -1,70 +1,40 @@
 import { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Send, MoreHorizontal, Image as ImageIcon, Paperclip, Mic, Book, MapPin } from 'react-feather';
+import { Heart, MessageCircle, Send, MoreHorizontal, Image as ImageIcon, Paperclip, Mic, Book, MapPin, Menu } from 'react-feather';
 import { useAuthStore } from '../store/useAuthStore';
 import { useMatchStore } from '../store/useMatchStore';
+import Header from '../components/SocialHeader';
 
 const SocialMediaHome = () => {
-  // Get authenticated user and matches from stores
   const { authUser } = useAuthStore();
   const { matches } = useMatchStore();
-  
-  // State for loading user data
-  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
-
-  // Fetch user data when component mounts
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        // Replace with your actual API call
-        // const response = await api.getUserProfile(authUser.id);
-        // setUserData(response.data);
-        
-        // Mock data - remove this in production
-        const mockUserData = {
-          id: authUser.id,
-          username: authUser.username,
-          name: authUser.name,
-          avatar: authUser.image || 'https://i.pravatar.cc/150', // Using image from authUser
-          university: authUser.university || 'University of Example',
-          course: authUser.course || 'Computer Science',
-          friends: matches.length // Using actual matches count
-        };
-        
-        setUserData(mockUserData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setLoading(false);
-      }
-    };
-
-    if (authUser) {
-      fetchUserData();
-    }
-  }, [authUser, matches]);
-
+  const [isMobile, setIsMobile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState('');
   const [comments, setComments] = useState({});
 
-  // Styled sponsored ads container
-  const sponsoredAds = [
-    { 
-      id: '1', 
-      title: 'Summer Sale', 
-      image: 'https://picsum.photos/300/200', 
-      desc: '50% off all campus essentials',
-      sponsor: 'Campus Store'
-    },
-    { 
-      id: '2', 
-      title: 'New Course', 
-      image: 'https://picsum.photos/300/201', 
-      desc: 'Learn React in 30 days',
-      sponsor: 'Tech Academy'
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (authUser) {
+      setUserData({
+        id: authUser.id,
+        name: authUser.name,
+        avatar: authUser.image || 'https://i.pravatar.cc/150',
+        university: authUser.university || 'University of Example',
+        course: authUser.course || 'Computer Science'
+      });
     }
-  ];
+  }, [authUser]);
 
   const likePost = (postId) => {
     setPosts(posts.map(post => {
@@ -123,688 +93,271 @@ const SocialMediaHome = () => {
     }
   };
 
-  if (loading || !userData) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f0f2f5',
-        fontFamily: 'Poppins, sans-serif'
-      }}>
-        <div>Loading user data...</div>
-      </div>
-    );
-  }
+  if (!userData) return <div>Loading...</div>;
 
-  return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      backgroundColor: '#f0f2f5',
-      fontFamily: 'Poppins, sans-serif'
-    }}>
-      {/* Left Section - 25% */}
-      <div style={{
-        width: '25%',
-        padding: '20px',
-        position: 'fixed',
-        height: '100vh',
-        overflowY: 'auto',
-        backgroundColor: 'white',
-        boxShadow: '0 0 10px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+  const LeftSidebar = () => (
+    <div className="hidden md:block w-full md:w-1/4 fixed h-screen overflow-y-auto bg-white shadow-md p-5 z-10">
+      <div className="flex items-center mb-5">
+        <img 
+          src={userData.avatar} 
+          alt={userData.name} 
+          className="w-14 h-14 rounded-full object-cover mr-3 border-2 border-gray-200"
+        />
+        <div>
+          <h3 className="font-semibold">{userData.name}</h3>
+          <p className="text-gray-500 text-sm">
+            {matches.length} matched {matches.length === 1 ? 'friend' : 'friends'}
+          </p>
+        </div>
+      </div>
+
+      <hr className="my-4 border-gray-200" />
+
+      <div className="mb-5">
+        <h4 className="flex items-center text-gray-500 font-medium mb-3">
+          <Book className="mr-2" size={16} />
+          Education
+        </h4>
+        <div className="bg-gray-100 rounded-lg p-3">
+          <p className="flex items-center text-gray-700 text-sm mb-1">
+            <MapPin className="mr-2" size={16} />
+            {userData.university}
+          </p>
+          <p className="flex items-center text-gray-700 text-sm">
+            <Book className="mr-2" size={16} />
+            {userData.course}
+          </p>
+        </div>
+      </div>
+
+      <hr className="my-4 border-gray-200" />
+
+      <div>
+        <h4 className="text-gray-500 font-medium mb-3">Matched Friends</h4>
+        {matches.slice(0, 5).map(match => (
+          <div key={match._id} className="flex items-center mb-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+            <img 
+              src={match.image || 'https://i.pravatar.cc/150'} 
+              alt={match.name} 
+              className="w-10 h-10 rounded-full object-cover mr-2 border border-gray-200"
+            />
+            <div>
+              <div className="font-medium text-sm">{match.name}</div>
+              <div className="text-gray-500 text-xs">
+                {new Date(match.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const MobileMenu = () => (
+    <div className={`fixed top-16 left-0 w-full bg-white shadow-lg z-20 transition-all duration-300 ease-in-out ${menuOpen ? 'h-[calc(100vh-64px)]' : 'h-0 overflow-hidden'}`}>
+      <div className="p-4 overflow-y-auto h-full">
+        <div className="flex items-center mb-4">
           <img 
             src={userData.avatar} 
             alt={userData.name} 
-            style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              marginRight: '15px',
-              border: '2px solid #e4e6eb'
-            }}
+            className="w-12 h-12 rounded-full object-cover mr-3 border-2 border-gray-200"
           />
           <div>
-            <h3 style={{ margin: 0, fontWeight: 600, fontFamily: 'Poppins, sans-serif' }}>{userData.name}</h3>
-            <p style={{ 
-              margin: 0, 
-              color: '#65676b', 
-              fontSize: '14px',
-              fontFamily: 'Poppins, sans-serif'
-            }}>
+            <h3 className="font-semibold">{userData.name}</h3>
+            <p className="text-gray-500 text-sm">
               {matches.length} matched {matches.length === 1 ? 'friend' : 'friends'}
             </p>
           </div>
         </div>
 
-        <hr style={{ 
-          border: 'none', 
-          borderTop: '1px solid #e4e6eb', 
-          margin: '15px 0' 
-        }} />
+        <hr className="my-3 border-gray-200" />
 
-        <div style={{ marginBottom: '20px' }}>
-          <h4 style={{ 
-            marginBottom: '15px', 
-            color: '#65676b',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontWeight: 600,
-            fontFamily: 'Poppins, sans-serif'
-          }}>
+        <div className="mb-4">
+          <h4 className="flex items-center text-gray-500 font-medium mb-2">
+            <Book className="mr-2" size={16} />
             Education
           </h4>
-          <div style={{ 
-            backgroundColor: '#f0f2f5',
-            borderRadius: '8px',
-            padding: '12px',
-            marginBottom: '10px'
-          }}>
-            <p style={{ 
-              margin: '5px 0', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              fontFamily: 'Poppins, sans-serif',
-              fontSize: '14px',
-              color: '#4a4a4a',
-              lineHeight: '1.4'
-            }}>
-              <MapPin size={16} color="#65676b" />
-              <strong style={{ fontWeight: '600' }}></strong> {userData.university}
+          <div className="bg-gray-100 rounded-lg p-2">
+            <p className="flex items-center text-gray-700 text-sm mb-1">
+              <MapPin className="mr-2" size={16} />
+              {userData.university}
             </p>
-            <p style={{ 
-              margin: '5px 0', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              fontFamily: 'Poppins, sans-serif',
-              fontSize: '14px',
-              color: '#4a4a4a',
-              lineHeight: '1.4'
-            }}>
-              <Book size={16} color="#65676b" />
-              <strong style={{ fontWeight: '600' }}></strong> {userData.course}
+            <p className="flex items-center text-gray-700 text-sm">
+              <Book className="mr-2" size={16} />
+              {userData.course}
             </p>
           </div>
         </div>
 
-        <hr style={{ 
-          border: 'none', 
-          borderTop: '1px solid #e4e6eb', 
-          margin: '15px 0' 
-        }} />
+        <hr className="my-3 border-gray-200" />
 
-        {/* Friends List */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '15px'
-        }}>
-          <h3 style={{ 
-            color: '#65676b', 
-            margin: 0,
-            fontSize: '16px',
-            fontWeight: 600,
-            fontFamily: 'Poppins, sans-serif'
-          }}>
-            Matched Friends
-          </h3>
-          <span style={{
-            color: '#1877f2',
-            fontSize: '13px',
-            cursor: 'pointer',
-            fontWeight: 500,
-            fontFamily: 'Poppins, sans-serif'
-          }}>
-            See All
-          </span>
-        </div>
-        
-        {matches.slice(0, 5).map(match => (
-          <div key={match._id} style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginBottom: '15px',
-            cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '8px',
-            ':hover': {
-              backgroundColor: '#f0f2f5'
-            }
-          }}>
-            <img 
-              src={match.image || 'https://i.pravatar.cc/150'} 
-              alt={match.name} 
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                marginRight: '10px',
-                border: '1px solid #e4e6eb'
-              }}
-            />
-            <div>
-              <div style={{ 
-                fontWeight: 600, 
-                fontSize: '14px',
-                fontFamily: 'Poppins, sans-serif'
-              }}>
-                {match.name}
-              </div>
-              <div style={{ 
-                fontSize: '12px', 
-                color: '#65676b',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontFamily: 'Poppins, sans-serif'
-              }}>
-                <span>Matched</span>
-                <span>•</span>
-                <span>{new Date(match.createdAt).toLocaleDateString()}</span>
-              </div>
+        <div>
+          <h4 className="text-gray-500 font-medium mb-2">Matched Friends</h4>
+          {matches.slice(0, 5).map(match => (
+            <div key={match._id} className="flex items-center mb-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+              <img 
+                src={match.image || 'https://i.pravatar.cc/150'} 
+                alt={match.name} 
+                className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200"
+              />
+              <span className="text-sm">{match.name}</span>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+    </div>
+  );
 
-      {/* Middle Section - 50% */}
-      <div style={{
-        width: '50%',
-        marginLeft: '25%',
-        padding: '20px',
-        backgroundColor: '#f0f2f5'
-      }}>
-        {/* Create Post */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          padding: '15px',
-          marginBottom: '20px',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-            <img 
-              src={userData.avatar} 
-              alt={userData.name} 
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                marginRight: '10px',
-                border: '1px solid #e4e6eb'
-              }}
-            />
-            <input
-              type="text"
-              placeholder="What's on your mind?"
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-              style={{
-                flex: 1,
-                border: 'none',
-                backgroundColor: '#f0f2f5',
-                borderRadius: '20px',
-                padding: '10px 15px',
-                outline: 'none',
-                fontSize: '15px',
-                fontFamily: 'Poppins, sans-serif'
-              }}
-            />
-          </div>
+  return (
+    <div className="min-h-screen bg-gray-100 font-sans">
+      <Header>
+        {isMobile && (
+          <button 
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-white mr-3"
+          >
+            <Menu size={24} />
+          </button>
+        )}
+      </Header>
 
-          <hr style={{ 
-            border: 'none', 
-            borderTop: '1px solid #e4e6eb', 
-            margin: '10px 0' 
-          }} />
+      {isMobile && <MobileMenu />}
+      {!isMobile && <LeftSidebar />}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <button style={{
-              display: 'flex',
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#65676b',
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontFamily: 'Poppins, sans-serif',
-              ':hover': {
-                backgroundColor: '#f0f2f5'
-              }
-            }}>
-              <ImageIcon color="#45bd62" style={{ marginRight: '8px' }} />
-              <span>Photo</span>
-            </button>
-            <button style={{
-              display: 'flex',
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#65676b',
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontFamily: 'Poppins, sans-serif'
-            }}>
-              <Paperclip color="#f7b928" style={{ marginRight: '8px' }} />
-              <span>Attachment</span>
-            </button>
-            <button style={{
-              display: 'flex',
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#65676b',
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontFamily: 'Poppins, sans-serif'
-            }}>
-              <Mic color="#f5533d" style={{ marginRight: '8px' }} />
-              <span>Audio</span>
-            </button>
-            <button 
-              onClick={handlePostSubmit}
-              style={{
-                backgroundColor: '#1877f2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '8px 16px',
-                cursor: 'pointer',
-                opacity: newPostContent.trim() ? 1 : 0.5,
-                fontWeight: 600,
-                fontSize: '14px',
-                fontFamily: 'Poppins, sans-serif'
-              }}
-              disabled={!newPostContent.trim()}
-            >
-              Post
-            </button>
-          </div>
-        </div>
-
-        {/* Posts Feed */}
-        {posts.map(post => (
-          <div key={post.id} style={{
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '20px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-          }}>
-            {/* Post Header */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between',
-              marginBottom: '12px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <img 
-                  src={post.userAvatar} 
-                  alt={post.userName} 
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    marginRight: '10px',
-                    border: '1px solid #e4e6eb'
-                  }}
-                />
-                <div>
-                  <h4 style={{ 
-                    margin: 0, 
-                    fontSize: '15px',
-                    fontFamily: 'Poppins, sans-serif',
-                    fontWeight: 600
-                  }}>
-                    {post.userName}
-                  </h4>
-                  <p style={{ 
-                    margin: 0, 
-                    fontSize: '12px', 
-                    color: '#65676b',
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    {new Date(post.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-              <button style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer',
-                color: '#65676b'
-              }}>
-                <MoreHorizontal />
-              </button>
-            </div>
-
-            {/* Post Content */}
-            <p style={{ 
-              margin: '15px 0', 
-              fontSize: '15px',
-              fontFamily: 'Poppins, sans-serif',
-              lineHeight: '1.5'
-            }}>
-              {post.caption}
-            </p>
-
-            {/* Post Image */}
-            <img 
-              src={post.imageUrl} 
-              alt={post.caption} 
-              style={{
-                width: '100%',
-                borderRadius: '8px',
-                marginBottom: '15px',
-                maxHeight: '500px',
-                objectFit: 'cover'
-              }}
-            />
-
-            {/* Post Actions */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              marginBottom: '10px',
-              padding: '0 10px'
-            }}>
-              <button 
-                onClick={() => likePost(post.id)}
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  background: 'none', 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  color: post.likes.includes(authUser.id) ? '#1877f2' : '#65676b',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  fontFamily: 'Poppins, sans-serif',
-                  fontSize: '14px'
-                }}
-              >
-                <Heart 
-                  fill={post.likes.includes(authUser.id) ? '#1877f2' : 'none'} 
-                  color={post.likes.includes(authUser.id) ? '#1877f2' : '#65676b'} 
-                  style={{ marginRight: '8px' }} 
-                />
-                <span>Like ({post.likes.length})</span>
-              </button>
-              <button style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer',
-                color: '#65676b',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontFamily: 'Poppins, sans-serif',
-                fontSize: '14px'
-              }}>
-                <MessageCircle style={{ marginRight: '8px' }} />
-                <span>Comment ({post.comments.length})</span>
-              </button>
-              <button style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer',
-                color: '#65676b',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontFamily: 'Poppins, sans-serif',
-                fontSize: '14px'
-              }}>
-                <Send style={{ marginRight: '8px' }} />
-                <span>Share</span>
-              </button>
-            </div>
-
-            {/* Comments */}
-            {post.comments.length > 0 && (
-              <div style={{ 
-                backgroundColor: '#f0f2f5',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '10px'
-              }}>
-                {post.comments.map(comment => (
-                  <div key={comment.id} style={{ 
-                    marginBottom: '8px', 
-                    fontSize: '14px',
-                    fontFamily: 'Poppins, sans-serif',
-                    lineHeight: '1.4'
-                  }}>
-                    <strong style={{ fontFamily: 'Poppins, sans-serif' }}>{comment.userName}</strong> {comment.text}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add Comment */}
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+      {/* Middle Section - Post Feed */}
+      <div className={`pt-16 ${isMobile ? 'w-full' : 'w-full md:w-1/2 md:ml-1/4'}`}>
+        <div className="p-4">
+          {/* Create Post */}
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-5">
+            <div className="flex items-center mb-3">
               <img 
                 src={userData.avatar} 
                 alt={userData.name} 
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  marginRight: '10px',
-                  border: '1px solid #e4e6eb'
-                }}
+                className="w-10 h-10 rounded-full object-cover mr-2 border border-gray-200"
               />
               <input
                 type="text"
-                placeholder="Write a comment..."
-                value={comments[post.id] || ''}
-                onChange={(e) => setComments(prev => ({
-                  ...prev,
-                  [post.id]: e.target.value
-                }))}
-                onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.id)}
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  backgroundColor: '#f0f2f5',
-                  borderRadius: '20px',
-                  padding: '8px 15px',
-                  outline: 'none',
-                  fontSize: '14px',
-                  fontFamily: 'Poppins, sans-serif'
-                }}
+                placeholder="What's on your mind?"
+                value={newPostContent}
+                onChange={(e) => setNewPostContent(e.target.value)}
+                className="flex-1 bg-gray-100 rounded-full px-4 py-2 outline-none"
               />
             </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Right Section - Modern Sidebar */}
-      <div style={{
-        width: '25%',
-        padding: '24px',
-        position: 'fixed',
-        right: 0,
-        height: '100vh',
-        overflowY: 'auto',
-        backgroundColor: '#ffffff',
-        boxShadow: '0 0 20px rgba(0,0,0,0.08)',
-        scrollbarWidth: 'thin',
-        scrollbarColor: '#e0e0e0 transparent'
-      }}>
-        {/* Sponsored Ads Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '20px'
-        }}>
-          <h3 style={{ 
-            color: '#65676b', 
-            margin: 0,
-            fontSize: '17px',
-            fontWeight: 600,
-            letterSpacing: '0.3px',
-            fontFamily: 'Poppins, sans-serif'
-          }}>
-            Sponsored Content
-          </h3>
-          <button style={{
-            background: 'none',
-            border: 'none',
-            color: '#1877f2',
-            fontSize: '13px',
-            cursor: 'pointer',
-            fontWeight: 500,
-            fontFamily: 'Poppins, sans-serif',
-            ':hover': {
-              textDecoration: 'underline'
-            }
-          }}>
-            See All
-          </button>
-        </div>
-        
-        {/* Ads Container */}
-        <div style={{
-          display: 'grid',
-          gap: '16px'
-        }}>
-          {sponsoredAds.map(ad => (
-            <div key={ad.id} style={{ 
-              borderRadius: '12px',
-              overflow: 'hidden',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-              transition: 'all 0.25s cubic-bezier(0.17, 0.67, 0.83, 0.67)',
-              ':hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 6px 16px rgba(0,0,0,0.1)'
-              }
-            }}>
+            <hr className="my-2 border-gray-200" />
+
+            <div className="flex justify-between">
+              <button className="flex items-center text-gray-500 px-3 py-1 rounded hover:bg-gray-100">
+                <ImageIcon color="#45bd62" className="mr-1" />
+                <span>Photo</span>
+              </button>
+              <button className="flex items-center text-gray-500 px-3 py-1 rounded hover:bg-gray-100">
+                <Paperclip color="#f7b928" className="mr-1" />
+                <span>Attachment</span>
+              </button>
+              <button className="flex items-center text-gray-500 px-3 py-1 rounded hover:bg-gray-100">
+                <Mic color="#f5533d" className="mr-1" />
+                <span>Audio</span>
+              </button>
+              <button 
+                onClick={handlePostSubmit}
+                className={`px-4 py-1 rounded font-medium ${newPostContent.trim() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+                disabled={!newPostContent.trim()}
+              >
+                Post
+              </button>
+            </div>
+          </div>
+
+          {/* Posts Feed */}
+          {posts.map(post => (
+            <div key={post.id} className="bg-white rounded-lg shadow-sm p-4 mb-5">
+              {/* Post Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <img 
+                    src={post.userAvatar} 
+                    alt={post.userName} 
+                    className="w-10 h-10 rounded-full object-cover mr-2 border border-gray-200"
+                  />
+                  <div>
+                    <h4 className="font-medium">{post.userName}</h4>
+                    <p className="text-gray-500 text-xs">
+                      {new Date(post.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <button className="text-gray-500">
+                  <MoreHorizontal />
+                </button>
+              </div>
+
+              {/* Post Content */}
+              <p className="my-3">{post.caption}</p>
+
+              {/* Post Image */}
               <img 
-                src={ad.image} 
-                alt={ad.title} 
-                style={{
-                  width: '100%',
-                  height: '160px',
-                  objectFit: 'cover',
-                  objectPosition: 'center'
-                }}
+                src={post.imageUrl} 
+                alt={post.caption} 
+                className="w-full rounded-lg mb-3 max-h-96 object-cover"
               />
-              <div style={{ padding: '16px' }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '8px'
-                }}>
-                  <h4 style={{ 
-                    margin: 0,
-                    fontSize: '15px',
-                    fontWeight: 600,
-                    color: '#050505',
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    {ad.title}
-                  </h4>
-                  <span style={{
-                    fontSize: '11px',
-                    color: '#1877f2',
-                    backgroundColor: '#e7f3ff',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    Sponsored
-                  </span>
+
+              {/* Post Actions */}
+              <div className="flex justify-between px-2 mb-2">
+                <button 
+                  onClick={() => likePost(post.id)}
+                  className={`flex items-center px-3 py-1 rounded ${post.likes.includes(authUser.id) ? 'text-blue-500' : 'text-gray-500'}`}
+                >
+                  <Heart 
+                    fill={post.likes.includes(authUser.id) ? '#1877f2' : 'none'} 
+                    color={post.likes.includes(authUser.id) ? '#1877f2' : '#65676b'} 
+                    className="mr-1" 
+                  />
+                  <span>Like ({post.likes.length})</span>
+                </button>
+                <button className="flex items-center text-gray-500 px-3 py-1 rounded">
+                  <MessageCircle className="mr-1" />
+                  <span>Comment ({post.comments.length})</span>
+                </button>
+                <button className="flex items-center text-gray-500 px-3 py-1 rounded">
+                  <Send className="mr-1" />
+                  <span>Share</span>
+                </button>
+              </div>
+
+              {/* Comments */}
+              {post.comments.length > 0 && (
+                <div className="bg-gray-100 rounded-lg p-3 mb-2">
+                  {post.comments.map(comment => (
+                    <div key={comment.id} className="mb-1 text-sm">
+                      <strong>{comment.userName}</strong> {comment.text}
+                    </div>
+                  ))}
                 </div>
-                <p style={{ 
-                  margin: '6px 0',
-                  fontSize: '14px',
-                  color: '#65676b',
-                  lineHeight: '1.4',
-                  fontFamily: 'Poppins, sans-serif'
-                }}>
-                  {ad.desc}
-                </p>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginTop: '10px'
-                }}>
-                  <span style={{
-                    fontSize: '12px',
-                    color: '#8a8d91',
-                    display: 'flex',
-                    alignItems: 'center',
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#8a8d91" style={{ marginRight: '4px' }}>
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                    </svg>
-                    {ad.sponsor}
-                  </span>
-                </div>
+              )}
+
+              {/* Add Comment */}
+              <div className="flex items-center mt-2">
+                <img 
+                  src={userData.avatar} 
+                  alt={userData.name} 
+                  className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200"
+                />
+                <input
+                  type="text"
+                  placeholder="Write a comment..."
+                  value={comments[post.id] || ''}
+                  onChange={(e) => setComments(prev => ({
+                    ...prev,
+                    [post.id]: e.target.value
+                  }))}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddComment(post.id)}
+                  className="flex-1 bg-gray-100 rounded-full px-3 py-1 outline-none text-sm"
+                />
               </div>
             </div>
           ))}
         </div>
-
-        <hr style={{ 
-          border: 'none', 
-          height: '1px',
-          background: 'linear-gradient(to right, transparent, #e4e6eb, transparent)',
-          margin: '24px 0',
-          opacity: 0.8
-        }} />
-
-        {/* Optional: Add a "Create Ad" CTA */}
-        <button style={{
-          width: '100%',
-          padding: '12px',
-          borderRadius: '8px',
-          backgroundColor: '#f0f2f5',
-          border: 'none',
-          color: '#1877f2',
-          fontWeight: 600,
-          fontSize: '14px',
-          cursor: 'pointer',
-          transition: 'background-color 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          fontFamily: 'Poppins, sans-serif',
-          ':hover': {
-            backgroundColor: '#e4e6eb'
-          }
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877f2">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-          </svg>
-          Create Ad
-        </button>
       </div>
     </div>
   );

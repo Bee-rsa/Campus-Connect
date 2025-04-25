@@ -14,7 +14,7 @@ const AuthPage = () => {
 		>
 			<div className='w-full'>
 				<h2 className='text-center text-3xl font-extrabold text-white mb-8'>
-					{isLogin ? "Sign in to Campus Connect" : "Create a Campus Connect account"}
+					{isLogin ? "Sign in to Hey Mate" : "Create a Hey Mate account"}
 				</h2>
 
 				<div className='bg-white shadow-xl rounded-lg p-8'>
@@ -22,7 +22,7 @@ const AuthPage = () => {
 
 					<div className='mt-8 text-center'>
 						<p className='text-sm text-gray-600'>
-							{isLogin ? "New to Campus Connect? Create an Account in a few easy steps today!" : "Already have an account?"}
+							{isLogin ? "New to Hey Mate? Create an Account in a few easy steps today!" : "Already have an account?"}
 						</p>
 
 						<button

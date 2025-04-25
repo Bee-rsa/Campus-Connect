@@ -28,7 +28,7 @@ export const Header = () => {
           <div className='flex items-center'>
             <Link to='/' className='flex items-center space-x-2'>
               <Flame className='w-8 h-8 text-white' />
-              <span className='text-xl sm:text-2xl font-bold font-poppins text-white'>Campus Connect</span>
+              <span className='text-xl sm:text-2xl font-bold font-poppins text-white'>Hey Mate</span>
             </Link>
           </div>
 
@@ -145,3 +145,5 @@ export const Header = () => {
     </header>
   );
 };
+
+export default Header;

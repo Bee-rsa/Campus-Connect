@@ -56,6 +56,7 @@ const SwipeArea = () => {
                 {user.bio || "Focused on studies but always down for campus events!"}
               </p>
 
+
               {/* Course */}
               <div className="text-gray-800 pt-2 flex items-center justify-between text-sm sm:text-base">
                 <div className="flex items-center gap-2">

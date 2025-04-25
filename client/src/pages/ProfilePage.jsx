@@ -7,7 +7,7 @@ import { Camera, User, Edit3, Save } from "lucide-react";
 const ProfilePage = () => {
   const { authUser } = useAuthStore();
   const [name, setName] = useState(authUser.name || "");
-  const [bio, setBio] = useState(authUser.bio || "");
+  const [bio, setbio] = useState(authUser.bio || "");
   const [age, setAge] = useState(authUser.age || "");
   const [gender, setGender] = useState(authUser.gender || "");
   const [genderPreference, setGenderPreference] = useState(authUser.genderPreference || []);
@@ -168,7 +168,7 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* BIO */}
+              {/* bio */}
               <div className="space-y-1">
                 <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
                   About You
@@ -178,7 +178,7 @@ const ProfilePage = () => {
                   name="bio"
                   rows={4}
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+                  onChange={(e) => setbio(e.target.value)}
                   className="block w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
                   placeholder="Tell others about yourself..."
                 />
